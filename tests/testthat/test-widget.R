@@ -1,0 +1,122 @@
+# --------------------------------------------------------------------------
+# Tests
+# --------------------------------------------------------------------------
+
+test_that("Widget get and set properties", {
+  W <- make_widget("W", foo = "hello", bar = 0L)
+  w <- W$new()
+  expect_equal(w$foo, "hello")
+  expect_equal(w$bar, 0L)
+
+  w <- W$new(foo = "hi", bar = 42L)
+  expect_equal(w$foo, "hi")
+  expect_equal(w$bar, 42L)
+
+  w$bar <- 99L
+  expect_equal(w$bar, 99L)
+})
+
+test_that("Widget callback fires when field is updated locally", {
+  W <- make_widget("W", x = 0L, y = "")
+  w <- W$new()
+  fired_x <- NULL
+  fired_y <- NULL
+  w$connect(x = function(v) fired_x <<- v)
+  w$connect(y = function(v) fired_y <<- v)
+
+  w$x <- 7L
+  expect_equal(fired_x, 7L)
+  expect_null(fired_y)
+
+  w$y <- "changed"
+  expect_equal(fired_y, "changed")
+})
+
+test_that("Widget callback does not fire when value is unchanged", {
+  W <- make_widget("W", x = 0L)
+  w <- W$new()
+  count <- 0L
+  w$connect(x = function(v) count <<- count + 1L)
+  w$x <- 0L
+  expect_equal(count, 0L)
+})
+
+test_that("Widget join creates widget with field values from source", {
+  W <- make_widget("W", foo = "hello", bar = 42L)
+  local <- W$new()
+  remote <- W$join(local)
+  expect_equal(remote$foo, "hello")
+  expect_equal(remote$bar, 42L)
+})
+
+# A one-way pub/sub byte channel. Ydoc-agnostic.
+# `send(bytes)` enqueues a message; `subscribe(cb)` registers a receiver;
+# `flush()` drains the queue, invoking every subscriber once per message.
+make_wire <- function() {
+  queue <- list()
+  subscribers <- list()
+  list(
+    send = function(bytes) queue[[length(queue) + 1L]] <<- bytes,
+    subscribe = function(cb) subscribers[[length(subscribers) + 1L]] <<- cb,
+    pending = function() length(queue),
+    flush = function() {
+      msgs <- queue
+      queue <<- list()
+      for (m in msgs) {
+        for (cb in subscribers) {
+          cb(m)
+        }
+      }
+    }
+  )
+}
+
+test_that("manual wire delivers updates between widgets", {
+  W <- make_widget("W", foo = "", bar = "")
+  local <- W$new()
+  remote <- W$join(local)
+
+  l_to_r <- make_wire()
+  r_to_l <- make_wire()
+
+  # Producers: a widget's local-origin changes are pushed as v1 update bytes.
+  encode_into <- function(wire) {
+    function(trans, event) {
+      origin <- trans$origin()
+      if (!is.null(origin) && origin$equal(REMOTE_ORIGIN)) {
+        return()
+      }
+      diff <- trans$encode_diff_v1(event$before_state())
+      if (length(diff) > 0L) wire$send(diff)
+    }
+  }
+  local$ydoc$observe_transaction_cleanup(encode_into(l_to_r), key = 1L)
+  remote$ydoc$observe_transaction_cleanup(encode_into(r_to_l), key = 1L)
+
+  # Consumers: incoming bytes are applied to the peer with REMOTE_ORIGIN.
+  apply_into <- function(widget) {
+    function(diff) {
+      widget$ydoc$with_transaction(
+        function(t) t$apply_update_v1(diff),
+        mutable = TRUE,
+        origin = REMOTE_ORIGIN
+      )
+    }
+  }
+  l_to_r$subscribe(apply_into(remote))
+  r_to_l$subscribe(apply_into(local))
+
+  local$foo <- "synced"
+  expect_equal(remote$foo, "") # not delivered yet
+  expect_equal(l_to_r$pending(), 1L)
+
+  l_to_r$flush()
+  expect_equal(remote$foo, "synced")
+  expect_equal(l_to_r$pending(), 0L)
+  expect_equal(r_to_l$pending(), 0L) # REMOTE_ORIGIN apply does not echo back
+
+  remote$bar <- "also-synced"
+  expect_equal(local$bar, "")
+  r_to_l$flush()
+  expect_equal(local$bar, "also-synced")
+})

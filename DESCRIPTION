@@ -1,0 +1,18 @@
+Package: ywidget
+Title: Reactive Widgets Backed by Yr CRDTs
+Version: 0.0.0.9000
+Authors@R: person("Antoine", "Prouvost", role = c("aut", "cre"),
+    email = "AntoinePrv@users.noreply.github.com")
+Description: R port of ypywidgets — reactive widget models whose state is
+    synchronised through Yjs CRDTs via the yr package.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.1)
+Imports:
+    R6,
+    yr,
+    hera
+Suggests:
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
