@@ -56,7 +56,7 @@ YdocStorage <- R6::R6Class(
           if (identical(private$attrs$get(trans, private$key), value)) {
             return(FALSE)
           }
-          # TODO should not insert anything unconditionally but allow for setting recusive
+          # TODO should not insert anything unconditionally but allow for setting recursive
           # struct such as Text, Array...
           private$attrs$insert_any(trans, private$key, value)
           TRUE

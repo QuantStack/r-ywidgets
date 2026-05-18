@@ -1,0 +1,47 @@
+[workspace]
+name = "r-ywidgets"
+description = "Reactive widgets backed by Yr CRDTs (R port of ypywidgets)"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "osx-64", "linux-64", "win-64"]
+
+[environments]
+dev = { features = ["test", "dev"], solve-group = "default" }
+
+# Runtime dependencies — present in every environment.
+[dependencies]
+r-base = ">=4.1"
+r-yr = ">=0.1.2"
+xeus-r = ">=0.11.0"  # hera
+r-r6 = "*"
+
+[feature.test.dependencies]
+r-testthat = ">=3.0.0"
+yjs-widgets = "*"
+
+[feature.test.tasks]
+description = "Run r-ywidget unit tests"
+test = "Rscript -e 'testthat::test_local()'"
+
+[feature.dev.dependencies]
+r-devtools = "*"
+r-roxygen2 = "*"
+air = "*"
+typos = "*"
+pre-commit = "*"
+jupyterlab = ">=4"
+jupyterlab-kernelspy = "*"
+
+[feature.dev.tasks]
+# Formatters
+fmt-air = "air format R/ tests/"
+fmt-tombi = "tombi format"
+fmt = { depends-on = ["fmt-air", "fmt-tombi"] }
+# Checkers
+check-r = "Rscript -e 'devtools::check()'"  # Not ready
+check-typos = "typos --write-changes"
+check = { depends-on = ["check-typos"] }
+# Pre-commit easy alias
+pre-commit = "pre-commit"
+pre-commit-all = "pre-commit run --all-files"
+
+document = "Rscript -e 'devtools::document()'"
