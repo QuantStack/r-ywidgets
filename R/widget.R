@@ -10,13 +10,11 @@ REMOTE_ORIGIN <- NULL
   REMOTE_ORIGIN <<- yr::Origin$new(1L)
 }
 
-#' Storage backend that reads and writes to a Y.js MapRef entry.
+#' `Reactive` storage backed by a Y.js `_attrs` map entry. Writes use
+#' `LOCAL_ORIGIN` so the ydoc observer does not echo them back as remote
+#' changes.
 #'
-#' `update()` writes with `LOCAL_ORIGIN` so the ydoc observer ignores it.
-#'
-#' @field ydoc   The Y.js document.
-#' @field attrs  The `_attrs` MapRef within the document.
-#' @field key    The attribute key this storage is bound to.
+#' @export
 YdocStorage <- R6::R6Class(
   "YdocStorage",
   private = list(
@@ -25,31 +23,26 @@ YdocStorage <- R6::R6Class(
     key = NULL
   ),
   public = list(
-    #' @description Create a new `YdocStorage`.
-    #' @param ydoc   A `yr::Doc` instance.
-    #' @param attrs  The `_attrs` MapRef from the document.
-    #' @param key    The attribute key to read/write.
+    #' @description Bind the backend to one `_attrs` key.
+    #' @param ydoc The `yr::Doc`.
+    #' @param attrs Its `_attrs` map.
+    #' @param key Attribute key to read/write.
     initialize = function(ydoc, attrs, key) {
       private$ydoc <- ydoc
       private$attrs <- attrs
       private$key <- key
     },
 
-    #' @description Read the current value from the ydoc.
-    #' @return The value stored under `key` in `_attrs`.
+    #' @description Return the value stored under `key`.
     read = function() {
       private$ydoc$with_transaction(
         function(trans) private$attrs$get(trans, private$key)
       )
     },
 
-    #' @description Write a new value to the ydoc.
-    #'
-    #' No-ops when the value is unchanged. Writes with `LOCAL_ORIGIN` so the
-    #' ydoc observer does not re-emit a remote-change signal.
-    #'
-    #' @param value The new value to store.
-    #' @return `TRUE` if the value was written, `FALSE` if unchanged.
+    #' @description Write `value` under `key`; no-op when unchanged.
+    #' @param value New value.
+    #' @return `TRUE` iff the value was written.
     update = function(value) {
       private$ydoc$with_transaction(
         function(trans) {
@@ -68,20 +61,20 @@ YdocStorage <- R6::R6Class(
   )
 )
 
-#' Base class for CRDT-backed widgets.
+#' Base class for CRDT-backed widgets
 #'
-#' Owns a `yr::Doc` and exposes a `remote_changed` signal that fires after
-#' every remote attribute change.  Use [make_widget()] to generate subclasses
-#' with named, CRDT-backed attributes.
+#' Owns a `yr::Doc` and a [Signal] that fires on remote attribute changes.
+#' Use [make_widget()] to generate subclasses with named CRDT-backed
+#' attributes.
 #'
-#' @field ydoc           The underlying `yr::Doc`.
-#' @field remote_changed A [Signal] that emits `(key, value)` on remote changes.
+#' @export
 Widget <- R6::R6Class(
   "Widget",
   public = list(
+    #' @field ydoc The underlying `yr::Doc`.
     ydoc = NULL,
 
-    #' @field remote_changed Signal(key, value) — fires after every remote attribute change.
+    #' @field remote_changed [Signal] emitting `(key, value)` on remote changes.
     remote_changed = NULL,
 
     #' @description Read the model name registered in the ydoc `_model_name` text.
@@ -142,18 +135,18 @@ Widget <- R6::R6Class(
   )
 )
 
-#' Generate a Widget subclass with named CRDT-backed attributes.
+#' Generate a Widget subclass with CRDT-backed attributes
 #'
-#' Each field becomes:
-#' - a [Reactive] backed by a [YdocStorage] (reads/writes go directly to `_attrs`)
-#' - an active binding for transparent read/write access
-#' - automatic signal emission when a remote peer changes the value
+#' Each named attribute becomes an active binding whose reads and writes go
+#' through the widget's ydoc `_attrs` map, and which emits its [Signal] when a
+#' remote peer changes the value.
 #'
 #' @param classname Name of the generated R6 class.
-#' @param ...       Named default values for each attribute.
-#' @param inherit   Parent R6 class (default: [Widget]).
-#' @return An R6 class with a `$join(state)` static method in addition to the
-#'   standard `$new(...)` constructor.
+#' @param ...       Named default values, one per attribute.
+#' @param inherit   Parent R6 class.
+#' @return An [R6::R6Class] generator. Generated classes add a static
+#'   `$join(widget)` constructor that mirrors another widget's ydoc state,
+#'   alongside the standard `$new(...)`.
 #'
 #' @examples
 #' MyWidget <- make_widget("MyWidget", foo = "", bar = 0L)
@@ -162,6 +155,8 @@ Widget <- R6::R6Class(
 #' w$foo                                   # reads from ydoc
 #' w$foo <- "hi"                           # writes to ydoc
 #' w$connect(foo = function(v) cat("foo changed:", v, "\n"))
+#'
+#' @export
 make_widget <- function(classname, ..., inherit = Widget) {
   fields <- list(...)
   nms <- names(fields)
@@ -202,9 +197,7 @@ make_widget <- function(classname, ..., inherit = Widget) {
   }
   formals(init_fn) <- c(fields, list(ydoc = NULL, .skip_defaults = FALSE))
 
-  #' @description Connect callbacks to one or more attribute signals.
-  #' @param ... Named functions where each name is an attribute of the widget.
-  #' @return The widget invisibly (for chaining).
+  # connect(name = fn, ...): subscribe callbacks to attribute signals by name.
   connect_fn <- function(...) {
     args <- list(...)
     for (nm in names(args)) {
@@ -221,15 +214,9 @@ make_widget <- function(classname, ..., inherit = Widget) {
     public = list(initialize = init_fn, connect = connect_fn)
   )
 
-  #' @description Create a new instance that mirrors another widget's current state.
-  #'
-  #' Root types are declared before the update is applied, as recommended by
-  #' yrs.  The update is applied with `LOCAL_ORIGIN` so that the observer does
-  #' not emit signals during the initial load.
-  #'
-  #' @param widget  An existing widget instance whose ydoc state should be cloned.
-  #' @param version Encoding version, either `"v1"` (default) or `"v2"`.
-  #' @return A new instance of the widget class.
+  # join(widget, version = "v1"|"v2"): build an instance mirroring another
+  # widget's ydoc state. The diff is applied with LOCAL_ORIGIN so the observer
+  # stays quiet during the initial load.
   cls$join <- function(widget, version = "v1") {
     empty_sv <- yr::Doc$new()$with_transaction(function(t) t$state_vector())
     encode_diff <- paste0("encode_diff_", version)
