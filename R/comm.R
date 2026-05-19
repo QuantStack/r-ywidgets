@@ -221,7 +221,8 @@ mime_bundle.CommWidget <- function(x, mimetypes = mime_types(x), ...) {
         model_id = x$comm_id()
       )
     ),
-    metadata = list()
+    # Serialize as dict, not list
+    metadata = structure(list(), names = character(0))
   )
 }
 

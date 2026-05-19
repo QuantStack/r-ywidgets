@@ -819,7 +819,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libxrender-0.9.12-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/xorg-libxt-1.3.1-hb9d3cd8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/yaml-0.2.5-h280c20c_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.0-pyhcf101f3_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.1-pyhcf101f3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-collection-0.5.1-pyh09b8992_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zeromq-4.3.5-h41580af_10.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/linux-64/zstd-1.5.7-hb78ec9c_6.conda
@@ -1171,7 +1172,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-64/xeus-r-0.11.0-r45h45edcf1_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/xeus-zmq-4.0.0-h695af4d_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/yaml-0.2.5-h4132b18_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.0-pyhcf101f3_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.1-pyhcf101f3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-collection-0.5.1-pyh09b8992_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zeromq-4.3.5-h27d9b8f_10.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-64/zlib-1.3.2-hbb4bfdb_2.conda
@@ -1524,7 +1526,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/xeus-r-0.11.0-r44he0f44cb_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/xeus-zmq-4.0.0-h5cc99d8_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h925e9cb_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.0-pyhcf101f3_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.1-pyhcf101f3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-collection-0.5.1-pyh09b8992_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zeromq-4.3.5-h4818236_10.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zlib-1.3.2-h8088a28_2.conda
@@ -1855,7 +1858,8 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/win-64/xeus-r-0.11.0-r45h72f11de_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/xeus-zmq-4.0.0-hecdc818_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/yaml-0.2.5-h6a83c73_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.0-pyhcf101f3_1.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.1-pyhcf101f3_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-collection-0.5.1-pyh09b8992_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zeromq-4.3.5-h507cc87_10.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.1-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/win-64/zstd-1.5.7-h534d264_6.conda
@@ -13485,16 +13489,25 @@ packages:
   license_family: MIT
   size: 63944
   timestamp: 1753484092156
-- conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.0-pyhcf101f3_1.conda
-  sha256: 774bf6e7e2aacc57bfeae08151327a8f29739826cc96154f4f11d8cd5db47a1e
-  md5: 23dc2f4422c692df7e572ffc51ff473e
+- conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-0.5.1-pyhcf101f3_0.conda
+  sha256: b71a470cb5205e0917746b705434c25c00a45227ba2044469bd17de9500fadd0
+  md5: 0b9a1b6ac64d07fd43c783f0da66141e
   depends:
   - python >=3.10
   - python
   license: BSD-3-Clause
-  license_family: BSD
-  size: 38437
-  timestamp: 1778658872139
+  size: 38600
+  timestamp: 1779191003900
+- conda: https://conda.anaconda.org/conda-forge/noarch/yjs-widgets-collection-0.5.1-pyh09b8992_0.conda
+  sha256: a757728a193793799cfe58cee7f842fec86563127871de6f473506b7156114c6
+  md5: 635c6d948f936e415717fee074df379a
+  depends:
+  - yjs-widgets ==0.5.1 pyhcf101f3_0
+  - python >=3.10
+  - python
+  license: BSD-3-Clause
+  size: 31544
+  timestamp: 1779191003900
 - conda: https://conda.anaconda.org/conda-forge/linux-64/zeromq-4.3.5-h41580af_10.conda
   sha256: 325d370b28e2b9cc1f765c5b4cdb394c91a5d958fbd15da1a14607a28fee09f6
   md5: 755b096086851e1193f3b10347415d7c
