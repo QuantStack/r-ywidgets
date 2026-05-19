@@ -1,47 +1,37 @@
-#' Pure event emitter
+#' Event emitter.
 #'
-#' Holds a list of subscriber callbacks and broadcasts a value to all of them
-#' on [emit()]. Holds no state of its own.
+#' Broadcasts a value to all registered callbacks. Holds no state of its own.
 #'
 #' @export
 Signal <- R6::R6Class(
   "Signal",
+  private = list(subscribers = list()),
   public = list(
-    subscribers = NULL,
-
-    #' @description Create a new Signal with no subscribers.
-    initialize = function() {
-      self$subscribers <- list()
-    },
-
-    #' @description Register a callback to be called on each [emit()].
-    #' @param f A function accepting a single value.
+    #' @description Register a callback invoked on every `emit()`.
+    #' @param f A function accepting the emitted arguments.
     connect = function(f) {
-      self$subscribers[[length(self$subscribers) + 1]] <- f
+      private$subscribers[[length(private$subscribers) + 1]] <- f
     },
 
-    #' @description Broadcast arguments to all subscribers.
-    #' @param ... Arguments passed to each subscriber callback.
+    #' @description Invoke every registered callback with `...`.
+    #' @param ... Arguments forwarded to each callback.
     emit = function(...) {
-      for (f in self$subscribers) {
+      for (f in private$subscribers) {
         f(...)
       }
     }
   )
 )
 
-#' Naive local storage backend
-#'
-#' Stores a value in a private R6 field. This is the default backend for
-#' [Reactive].
+#' Default in-memory storage backend for `Reactive`.
 #'
 #' @export
 LocalStorage <- R6::R6Class(
   "LocalStorage",
   private = list(value = NULL),
   public = list(
-    #' @description Create a new LocalStorage.
-    #' @param value Initial value (default `NULL`).
+    #' @description Create the backend.
+    #' @param value Initial value.
     initialize = function(value = NULL) {
       private$value <- value
     },
@@ -51,9 +41,9 @@ LocalStorage <- R6::R6Class(
       private$value
     },
 
-    #' @description Update the stored value if it differs from the current one.
-    #' @param value The candidate new value.
-    #' @return `TRUE` if the value was changed, `FALSE` otherwise.
+    #' @description Store `value`; no-op when unchanged.
+    #' @param value New value.
+    #' @return `TRUE` iff the value was replaced.
     update = function(value) {
       if (identical(private$value, value)) {
         return(FALSE)
@@ -64,12 +54,10 @@ LocalStorage <- R6::R6Class(
   )
 )
 
-#' Stateful reactive value
+#' Reactive value
 #'
-#' Wraps a storage backend and owns a [Signal]. Calling [set()] updates the
-#' stored value and emits to all subscribers, but only when the new value
-#' differs from the current one (checked with [identical()]). Use `$signal`
-#' to connect callbacks.
+#' Wraps a storage backend and a [Signal]. `set()` writes the value and emits
+#' on `$signal`, but only when it differs from the current value.
 #'
 #' @export
 Reactive <- R6::R6Class(
@@ -79,13 +67,13 @@ Reactive <- R6::R6Class(
   ),
 
   public = list(
-    #' @field signal The [Signal] emitted when the value changes.
+    #' @field signal [Signal] fired when the value changes.
     signal = NULL,
 
-    #' @description Create a new Reactive.
-    #' @param value Initial value (default `NULL`).
-    #' @param storage A storage backend with `read()` and `write(value)` methods.
-    #'   Defaults to a [LocalStorage] initialised with `value`.
+    #' @description Create a reactive value.
+    #' @param value Initial value.
+    #' @param storage Backend implementing `read()` and `update(value)`;
+    #'   defaults to in-memory storage.
     initialize = function(value = NULL, storage = NULL) {
       private$storage <- if (is.null(storage)) {
         LocalStorage$new(value)
@@ -111,16 +99,14 @@ Reactive <- R6::R6Class(
   )
 )
 
-#' Create a reactive R6 class with named fields
+#' Generate a reactive R6 class
 #'
-#' Returns a new R6 class whose fields are backed by [Reactive] objects. Each
-#' field `f` gets an active binding for read/write access and a `connect_f`
-#' public method for subscribing to its signal. The class can be further
-#' extended via R6 `inherit`.
+#' Each named argument becomes a [Reactive]-backed field exposed as an active
+#' binding, plus a `connect()` method to subscribe callbacks by field name.
 #'
-#' @param classname Name of the generated R6 class (a string).
-#' @param ... Named default values for each reactive field.
-#' @return An R6 class generator.
+#' @param classname Name of the generated R6 class.
+#' @param ... Named default values, one per reactive field.
+#' @return An [R6::R6Class] generator.
 #' @export
 make_reactive <- function(classname, ...) {
   fields <- list(...)

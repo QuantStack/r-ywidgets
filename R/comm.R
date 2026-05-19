@@ -30,22 +30,9 @@
   invisible()
 }
 
-#' Thin transport wrapper around a Jupyter Comm
-#'
-#' Encodes outgoing [Message] objects into binary buffers and decodes incoming
-#' buffers back into [Message] objects, isolating [CommWidget] from the raw
-#' hera comm API.
-#'
-#' @section Methods:
-#' \describe{
-#'   \item{`initialize(target_name, description, metadata, on_remote_message)`}{
-#'     Registers `target_name` if needed, opens a new comm, and wires
-#'     `on_remote_message` as the incoming-message handler.}
-#'   \item{`send(message)`}{Encode `message` and send it as a binary buffer.}
-#'   \item{`comm_id()`}{Return the underlying comm's id string.}
-#' }
-#'
-#' @keywords internal
+#' Thin transport wrapper around a Jupyter Comm: encodes/decodes `yr::Message`
+#' buffers so `CommWidget` never touches the raw hera comm API.
+#' @noRd
 CommProvider <- R6::R6Class(
   "CommProvider",
   public = list(
@@ -98,32 +85,11 @@ CommProvider <- R6::R6Class(
 
 #' Widget backed by a Jupyter Comm and a CRDT ydoc
 #'
-#' `CommWidget` extends [Widget] by opening a Jupyter Comm on construction and
-#' running the Y.js sync protocol over it, mirroring `ypywidgets.CommWidget`.
-#'
-#' On construction the widget sends `SyncStep1` (its current state vector).
-#' Incoming messages are dispatched to per-state handlers:
-#'
-#' * **SyncStep1** — reply with `SyncStep2` (diff since the peer's state vector).
-#' * **SyncStep2** — apply the peer's state; register a transaction observer
-#'   that forwards subsequent local changes as `Update` messages. The observer
-#'   is registered only once, so additional clients reconnecting do not cause
-#'   duplicate forwarding.
-#' * **Update** — apply the incremental update from the peer.
-#'
-#' @section Methods:
-#' \describe{
-#'   \item{`initialize(ydoc = NULL, comm_metadata = NULL)`}{
-#'     Create the widget, open a Jupyter Comm on the `"ywidget"` target, and
-#'     send the initial `SyncStep1`. `ydoc` is an optional existing [yr::YDoc];
-#'     `comm_metadata` overrides the default metadata sent on `comm$open`.}
-#'   \item{`on_remote_message(msg)`}{
-#'     Dispatch an incoming [yr::Message] to the appropriate sync handler.
-#'     Exposed as a public method so it can be called via a captured `self`
-#'     reference from within hera callbacks, where R6 bindings are broken.}
-#'   \item{`comm_id()`}{Return the underlying comm id. Used by
-#'     `mime_bundle.CommWidget` to build the `ywidget-view` display payload.}
-#' }
+#' Extends [Widget] by opening a Jupyter Comm and running the Y.js sync
+#' protocol over it, mirroring `ypywidgets.CommWidget`: on `SyncStep1` reply
+#' with a `SyncStep2` diff; on `SyncStep2` apply the peer's state and (once)
+#' start forwarding local changes as `Update`s; on `Update` apply the peer's
+#' incremental change.
 #'
 #' @export
 CommWidget <- R6::R6Class(
@@ -131,6 +97,9 @@ CommWidget <- R6::R6Class(
   inherit = Widget,
 
   public = list(
+    #' @description Open a Comm on the `"ywidget"` target and send `SyncStep1`.
+    #' @param ydoc Optional existing `yr::Doc` to adopt.
+    #' @param comm_metadata Overrides the default metadata sent on comm open.
     initialize = function(ydoc = NULL, comm_metadata = NULL) {
       super$initialize(ydoc)
 
@@ -161,6 +130,10 @@ CommWidget <- R6::R6Class(
       )
     },
 
+    #' @description Dispatch an incoming `yr::Message` to its sync handler.
+    #'   Public so hera callbacks can re-enter via a captured `self`, where R6
+    #'   bindings are otherwise broken.
+    #' @param msg A `yr::Message`.
     on_remote_message = function(msg) {
       if (msg$is_sync_message()) {
         sync_msg <- msg$inner()
@@ -177,6 +150,7 @@ CommWidget <- R6::R6Class(
       }
     },
 
+    #' @description The underlying comm id (used to build the display payload).
     comm_id = function() private$.comm_provider$comm_id()
   ),
 
@@ -231,12 +205,12 @@ CommWidget <- R6::R6Class(
   )
 )
 
-#' @export
+#' @exportS3Method hera::mime_types
 mime_types.CommWidget <- function(x) {
   c("text/plain", "application/vnd.jupyter.ywidget-view+json")
 }
 
-#' @export
+#' @exportS3Method hera::mime_bundle
 mime_bundle.CommWidget <- function(x, mimetypes = mime_types(x), ...) {
   list(
     data = list(
@@ -253,12 +227,11 @@ mime_bundle.CommWidget <- function(x, mimetypes = mime_types(x), ...) {
 
 #' Generate a CommWidget subclass with named CRDT-backed attributes
 #'
-#' Same as [make_widget()] but the generated class inherits from [CommWidget],
-#' so each instance opens a Jupyter Comm and wires it to the ydoc through a
-#' [CommProvider].
+#' Like [make_widget()], but the generated class inherits from [CommWidget],
+#' so each instance opens a Jupyter Comm and syncs its ydoc over it.
 #'
 #' @inheritParams make_widget
-#' @return An R6 class extending [CommWidget].
+#' @return An [R6::R6Class] generator producing [CommWidget] subclasses.
 #' @export
 make_comm_widget <- function(classname, ..., inherit = CommWidget) {
   make_widget(classname, ..., inherit = inherit)
