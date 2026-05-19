@@ -30,6 +30,15 @@ typos = "*"
 pre-commit = "*"
 jupyterlab = ">=4"
 jupyterlab-kernelspy = "*"
+yjs-widgets = "*"
+yjs-widgets-collection = "*"
+
+[feature.dev.tasks.install-ywidget]
+cmd = "R CMD INSTALL ."
+
+[feature.dev.tasks.serve-jupyter]
+cmd = "jupyter"
+depends-on = ["install-ywidget"]
 
 [feature.dev.tasks]
 # Document
