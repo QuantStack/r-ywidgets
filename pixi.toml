@@ -24,7 +24,7 @@ test = "Rscript -e 'testthat::test_local()'"
 
 [feature.dev.dependencies]
 r-devtools = "*"
-r-roxygen2 = "*"
+r-roxygen2 = "==8.0.0"
 air = "*"
 typos = "*"
 pre-commit = "*"
