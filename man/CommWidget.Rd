@@ -25,6 +25,7 @@ incremental change.
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
   <li><span class="pkg-link" data-pkg="ywidgets" data-topic="Widget" data-id="model_name"><a href='../../ywidgets/html/Widget.html#method-Widget-model_name'><code>Widget$model_name()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="Widget" data-id="register_storage"><a href='../../ywidgets/html/Widget.html#method-Widget-register_storage'><code>Widget$register_storage()</code></a></span></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

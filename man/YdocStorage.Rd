@@ -2,13 +2,19 @@
 % Please edit documentation in R/widget.R
 \name{YdocStorage}
 \alias{YdocStorage}
-\title{`Reactive` storage backed by a Y.js `_attrs` map entry. Writes use
-`LOCAL_ORIGIN` so the ydoc observer does not echo them back as remote
-changes.}
+\title{`Reactive` storage backed by a Y.js `attrs` map entry.}
 \description{
-`Reactive` storage backed by a Y.js `_attrs` map entry. Writes use
-`LOCAL_ORIGIN` so the ydoc observer does not echo them back as remote
-changes.
+Implements the same protocol as [RemoteLocalStorage] (`read()`, `update()`,
+and a public `remote_changed` [Signal]). Writes via `update()` use
+`LOCAL_ORIGIN`; the owning [Widget] runs the `_attrs` observer and emits on
+`remote_changed` when a peer changes this key.
+}
+\section{Public fields}{
+  \if{html}{\out{<div class="r6-fields">}}
+  \describe{
+    \item{\code{remote_changed}}{[Signal] fired on remote changes to the value.}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -23,7 +29,7 @@ changes.
 \if{html}{\out{<a id="method-YdocStorage-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-YdocStorage-initialize}{}}}
 \subsection{\code{YdocStorage$new()}}{
-  Bind the backend to one `_attrs` key.
+  Bind the backend to one `attrs` key.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{YdocStorage$new(ydoc, attrs, key)}
@@ -33,7 +39,7 @@ changes.
     \if{html}{\out{<div class="arguments">}}
     \describe{
       \item{\code{ydoc}}{The `yr::Doc`.}
-      \item{\code{attrs}}{Its `_attrs` map.}
+      \item{\code{attrs}}{Its attribute map.}
       \item{\code{key}}{Attribute key to read/write.}
     }
     \if{html}{\out{</div>}}

@@ -10,9 +10,12 @@ REMOTE_ORIGIN <- NULL
   REMOTE_ORIGIN <<- yr::Origin$new(1L)
 }
 
-#' `Reactive` storage backed by a Y.js `_attrs` map entry. Writes use
-#' `LOCAL_ORIGIN` so the ydoc observer does not echo them back as remote
-#' changes.
+#' `Reactive` storage backed by a Y.js `attrs` map entry.
+#'
+#' Implements the same protocol as [RemoteLocalStorage] (`read()`, `update()`,
+#' and a public `remote_changed` [Signal]). Writes via `update()` use
+#' `LOCAL_ORIGIN`; the owning [Widget] runs the `_attrs` observer and emits on
+#' `remote_changed` when a peer changes this key.
 #'
 #' @export
 YdocStorage <- R6::R6Class(
@@ -23,14 +26,18 @@ YdocStorage <- R6::R6Class(
     key = NULL
   ),
   public = list(
-    #' @description Bind the backend to one `_attrs` key.
+    #' @field remote_changed [Signal] fired on remote changes to the value.
+    remote_changed = NULL,
+
+    #' @description Bind the backend to one `attrs` key.
     #' @param ydoc The `yr::Doc`.
-    #' @param attrs Its `_attrs` map.
+    #' @param attrs Its attribute map.
     #' @param key Attribute key to read/write.
     initialize = function(ydoc, attrs, key) {
       private$ydoc <- ydoc
       private$attrs <- attrs
       private$key <- key
+      self$remote_changed <- Signal$new()
     },
 
     #' @description Return the value stored under `key`.
@@ -63,9 +70,9 @@ YdocStorage <- R6::R6Class(
 
 #' Base class for CRDT-backed widgets
 #'
-#' Owns a `yr::Doc` and a [Signal] that fires on remote attribute changes.
-#' Use [make_widget()] to generate subclasses with named CRDT-backed
-#' attributes.
+#' Owns a `yr::Doc`, its `_attrs` map, and the per-attribute [YdocStorage]s.
+#' A single `_attrs` observer dispatches remote changes to each storage's
+#' `remote_changed` signal. Use [make_widget()] to generate subclasses.
 #'
 #' @export
 Widget <- R6::R6Class(
@@ -73,9 +80,6 @@ Widget <- R6::R6Class(
   public = list(
     #' @field ydoc The underlying `yr::Doc`.
     ydoc = NULL,
-
-    #' @field remote_changed [Signal] emitting `(key, value)` on remote changes.
-    remote_changed = NULL,
 
     #' @description Read the model name registered in the ydoc `_model_name` text.
     #' @return The class name string stored in the ydoc.
@@ -85,16 +89,12 @@ Widget <- R6::R6Class(
     #' @param ydoc An existing `yr::Doc` to adopt, or `NULL` to create a fresh one.
     initialize = function(ydoc = NULL) {
       self$ydoc <- if (is.null(ydoc)) yr::Doc$new() else ydoc
-      self$remote_changed <- Signal$new()
-
-      # Define the root types of the Ydoc
       private$.attrs <- self$ydoc$get_or_insert_map("_attrs")
-      # Only write the model name if it is not already registered.
+      private$.storages <- list()
       if (!nzchar(private$get_model_name())) {
         private$set_model_name(class(self)[[1L]])
       }
 
-      # Remote changes fire the local signal with the updated values.
       private$.attrs$observe(
         function(trans, event) {
           origin <- trans$origin()
@@ -103,17 +103,33 @@ Widget <- R6::R6Class(
           }
           keys_info <- event$keys(trans)
           for (k in names(keys_info)) {
+            storage <- private$.storages[[k]]
+            if (is.null(storage)) {
+              next
+            }
             new_val <- keys_info[[k]][["inserted"]]
-            if (!is.null(new_val)) self$remote_changed$emit(k, new_val)
+            if (!is.null(new_val)) storage$remote_changed$emit(new_val)
           }
         },
         key = 1L
       )
+    },
+
+    #' @description Build and register a [YdocStorage] for an attribute key.
+    #'   Remote changes to this key will be dispatched to the storage's
+    #'   `remote_changed` signal.
+    #' @param name Attribute key.
+    #' @return The newly created [YdocStorage].
+    register_storage = function(name) {
+      storage <- YdocStorage$new(self$ydoc, private$.attrs, name)
+      private$.storages[[name]] <- storage
+      storage
     }
   ),
 
   private = list(
     .attrs = NULL,
+    .storages = NULL,
 
     y_model_name = function() {
       self$ydoc$get_or_insert_text("_model_name")
@@ -138,8 +154,8 @@ Widget <- R6::R6Class(
 #' Generate a Widget subclass with CRDT-backed attributes
 #'
 #' Each named attribute becomes an active binding whose reads and writes go
-#' through the widget's ydoc `_attrs` map, and which emits its [Signal] when a
-#' remote peer changes the value.
+#' through the widget's ydoc `_attrs` map. Subscribers registered via
+#' `connect()` fire on both local writes and remote-peer updates.
 #'
 #' @param classname Name of the generated R6 class.
 #' @param ...       Named default values, one per attribute.
@@ -184,24 +200,19 @@ make_widget <- function(classname, ..., inherit = Widget) {
     invisible(lapply(nms, function(nm) {
       val <- get(nm, envir = parent.env(environment()))
       pnm <- paste0(".", nm)
-      private[[pnm]] <- Reactive$new(
-        storage = YdocStorage$new(self$ydoc, private$.attrs, nm)
-      )
+      private[[pnm]] <- Reactive$new(storage = self$register_storage(nm))
       if (!.skip_defaults) private[[pnm]]$set(val)
     }))
-    # Remote ydoc change: emit the field signal directly — the value is already
-    # in the ydoc so there is nothing to write back.
-    self$remote_changed$connect(function(key, value) {
-      if (key %in% nms) private[[paste0(".", key)]]$local_changed$emit(value)
-    })
   }
   formals(init_fn) <- c(fields, list(ydoc = NULL, .skip_defaults = FALSE))
 
-  # connect(name = fn, ...): subscribe callbacks to attribute signals by name.
+  # connect(name = fn, ...): subscribe to local and remote changes by field name.
   connect_fn <- function(...) {
     args <- list(...)
     for (nm in names(args)) {
-      private[[paste0(".", nm)]]$local_changed$connect(args[[nm]])
+      r <- private[[paste0(".", nm)]]
+      r$local_changed$connect(args[[nm]])
+      r$remote_changed$connect(args[[nm]])
     }
     invisible(self)
   }

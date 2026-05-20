@@ -20,8 +20,8 @@ An [R6::R6Class] generator. Generated classes add a static
 }
 \description{
 Each named attribute becomes an active binding whose reads and writes go
-through the widget's ydoc `_attrs` map, and which emits its [Signal] when a
-remote peer changes the value.
+through the widget's ydoc `_attrs` map. Subscribers registered via
+`connect()` fire on both local writes and remote-peer updates.
 }
 \examples{
 MyWidget <- make_widget("MyWidget", foo = "", bar = 0L)

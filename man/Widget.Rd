@@ -4,16 +4,14 @@
 \alias{Widget}
 \title{Base class for CRDT-backed widgets}
 \description{
-Owns a `yr::Doc` and a [Signal] that fires on remote attribute changes.
-Use [make_widget()] to generate subclasses with named CRDT-backed
-attributes.
+Owns a `yr::Doc`, its `_attrs` map, and the per-attribute [YdocStorage]s.
+A single `_attrs` observer dispatches remote changes to each storage's
+`remote_changed` signal. Use [make_widget()] to generate subclasses.
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
     \item{\code{ydoc}}{The underlying `yr::Doc`.}
-
-    \item{\code{remote_changed}}{[Signal] emitting `(key, value)` on remote changes.}
   }
   \if{html}{\out{</div>}}
 }
@@ -22,6 +20,7 @@ attributes.
   \itemize{
     \item \href{#method-Widget-model_name}{\code{Widget$model_name()}}
     \item \href{#method-Widget-initialize}{\code{Widget$new()}}
+    \item \href{#method-Widget-register_storage}{\code{Widget$register_storage()}}
     \item \href{#method-Widget-clone}{\code{Widget$clone()}}
   }
 }
@@ -56,6 +55,30 @@ attributes.
       \item{\code{ydoc}}{An existing `yr::Doc` to adopt, or `NULL` to create a fresh one.}
     }
     \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Widget-register_storage"></a>}}
+\if{latex}{\out{\hypertarget{method-Widget-register_storage}{}}}
+\subsection{\code{Widget$register_storage()}}{
+  Build and register a [YdocStorage] for an attribute key.
+  Remote changes to this key will be dispatched to the storage's
+  `remote_changed` signal.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Widget$register_storage(name)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{name}}{Attribute key.}
+    }
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Returns}{
+    The newly created [YdocStorage].
   }
 }
 
