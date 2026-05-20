@@ -19,7 +19,7 @@ r-testthat = ">=3.0.0"
 yjs-widgets = "*"
 
 [feature.test.tasks]
-description = "Run r-ywidget unit tests"
+description = "Run r-ywidgets unit tests"
 test = "Rscript -e 'testthat::test_local()'"
 
 [feature.dev.dependencies]
@@ -33,12 +33,12 @@ jupyterlab-kernelspy = "*"
 yjs-widgets = "*"
 yjs-widgets-collection = "*"
 
-[feature.dev.tasks.install-ywidget]
+[feature.dev.tasks.install-ywidgets]
 cmd = "R CMD INSTALL ."
 
 [feature.dev.tasks.serve-jupyter]
 cmd = "jupyter"
-depends-on = ["install-ywidget"]
+depends-on = ["install-ywidgets"]
 
 [feature.dev.tasks]
 # Document
