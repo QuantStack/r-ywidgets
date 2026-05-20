@@ -5,12 +5,17 @@
 \title{Reactive value}
 \description{
 Wraps a storage backend and a [Signal]. `set()` writes the value and emits
-on `$signal`, but only when it differs from the current value.
+on `$local_changed`, but only when it differs from the current value. If
+the storage exposes a `remote_changed` signal, it is re-exposed as
+`$remote_changed`; otherwise that field is `NULL`.
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
-    \item{\code{signal}}{[Signal] fired when the value changes.}
+    \item{\code{local_changed}}{[Signal] fired when the value is changed via `set()`.}
+
+    \item{\code{remote_changed}}{[Signal] from the storage backend, or `NULL` if
+the backend does not expose one.}
   }
   \if{html}{\out{</div>}}
 }
@@ -60,8 +65,8 @@ defaults to in-memory storage.}
 \if{html}{\out{<a id="method-Reactive-set"></a>}}
 \if{latex}{\out{\hypertarget{method-Reactive-set}{}}}
 \subsection{\code{Reactive$set()}}{
-  Set a new value. Emits via `$signal` only if the storage
-  reports that the value changed.
+  Set a new value. Emits via `$local_changed` only if the
+  storage reports that the value changed.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
     \preformatted{Reactive$set(value)}

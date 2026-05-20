@@ -192,7 +192,7 @@ make_widget <- function(classname, ..., inherit = Widget) {
     # Remote ydoc change: emit the field signal directly — the value is already
     # in the ydoc so there is nothing to write back.
     self$remote_changed$connect(function(key, value) {
-      if (key %in% nms) private[[paste0(".", key)]]$signal$emit(value)
+      if (key %in% nms) private[[paste0(".", key)]]$local_changed$emit(value)
     })
   }
   formals(init_fn) <- c(fields, list(ydoc = NULL, .skip_defaults = FALSE))
@@ -201,7 +201,7 @@ make_widget <- function(classname, ..., inherit = Widget) {
   connect_fn <- function(...) {
     args <- list(...)
     for (nm in names(args)) {
-      private[[paste0(".", nm)]]$signal$connect(args[[nm]])
+      private[[paste0(".", nm)]]$local_changed$connect(args[[nm]])
     }
     invisible(self)
   }
