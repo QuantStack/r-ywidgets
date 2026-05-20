@@ -1,4 +1,4 @@
-Package: ywidget
+Package: ywidgets
 Title: Reactive Widgets Backed by Yr CRDTs
 Version: 0.0.0.9000
 Authors@R: person("Antoine", "Prouvost", role = c("aut", "cre"),

@@ -1,4 +1,4 @@
 library(testthat)
-library(ywidget)
+library(ywidgets)
 
-test_check("ywidget")
+test_check("ywidgets")

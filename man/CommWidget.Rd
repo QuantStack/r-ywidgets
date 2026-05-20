@@ -11,7 +11,7 @@ start forwarding local changes as `Update`s; on `Update` apply the peer's
 incremental change.
 }
 \section{Super class}{
-\code{\link[ywidget:Widget]{Widget}} -> \code{CommWidget}
+\code{\link[ywidgets:Widget]{Widget}} -> \code{CommWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -24,7 +24,7 @@ incremental change.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidget" data-topic="Widget" data-id="model_name"><a href='../../ywidget/html/Widget.html#method-Widget-model_name'><code>Widget$model_name()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="Widget" data-id="model_name"><a href='../../ywidgets/html/Widget.html#method-Widget-model_name'><code>Widget$model_name()</code></a></span></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

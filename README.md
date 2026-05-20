@@ -1,4 +1,4 @@
-# r-ywidget
+# r-ywidgets
 
 Reactive widget models whose state is synchronised through Conflict-free Replicated
 Data Type (CRDT) via the `yrs` package.
@@ -17,7 +17,7 @@ shared ydoc. Constructing an instance opens a Jupyter comm and keeps the
 attributes in sync with the connected frontend.
 
 ```r
-library(ywidget)
+library(ywidgets)
 
 # Define a widget class with two synced attributes.
 Counter <- make_comm_widget("Counter", label = "", count = 0L)
