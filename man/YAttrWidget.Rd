@@ -14,7 +14,6 @@ A single `_attrs` observer dispatches remote changes to each storage's
 \section{Methods}{
 \subsection{Public methods}{
   \itemize{
-    \item \href{#method-YAttrWidget-model_name}{\code{YAttrWidget$model_name()}}
     \item \href{#method-YAttrWidget-initialize}{\code{YAttrWidget$new()}}
     \item \href{#method-YAttrWidget-register_storage}{\code{YAttrWidget$register_storage()}}
     \item \href{#method-YAttrWidget-clone}{\code{YAttrWidget$clone()}}
@@ -25,21 +24,6 @@ A single `_attrs` observer dispatches remote changes to each storage's
   <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
 </ul>
 </details>}}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-YAttrWidget-model_name"></a>}}
-\if{latex}{\out{\hypertarget{method-YAttrWidget-model_name}{}}}
-\subsection{\code{YAttrWidget$model_name()}}{
-  Read the model name registered in the ydoc `_model_name` text.
-  \subsection{Usage}{
-    \if{html}{\out{<div class="r">}}
-    \preformatted{YAttrWidget$model_name()}
-    \if{html}{\out{</div>}}
-  }
-  \subsection{Returns}{
-    The class name string stored in the ydoc.
-  }
-}
-
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-YAttrWidget-initialize"></a>}}
 \if{latex}{\out{\hypertarget{method-YAttrWidget-initialize}{}}}

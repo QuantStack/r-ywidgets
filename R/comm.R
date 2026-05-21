@@ -103,13 +103,11 @@ CommWidget <- R6::R6Class(
     initialize = function(ydoc = NULL, comm_metadata = NULL) {
       super$initialize(ydoc)
 
-      model_name <- self$model_name()
-
-      if (is.null(comm_metadata)) {
-        comm_metadata <- list(
-          ymodel_name = model_name,
-          create_ydoc = is.null(ydoc)
-        )
+      if (is.null(comm_metadata$ymodel_name)) {
+        comm_metadata$ymodel_name <- class(self)[[1L]]
+      }
+      if (is.null(comm_metadata$create_ydoc)) {
+        comm_metadata$create_ydoc <- is.null(ydoc)
       }
 
       # hera invokes the CommProvider callback with R6 bindings broken, so we
@@ -117,7 +115,7 @@ CommWidget <- R6::R6Class(
       widget <- self
       private$.comm_provider <- CommProvider$new(
         target_name = "ywidget",
-        description = model_name,
+        description = comm_metadata$ymodel_name,
         metadata = comm_metadata,
         on_remote_message = function(msg) widget$on_remote_message(msg)
       )
@@ -234,6 +232,21 @@ mime_bundle.CommWidget <- function(x, mimetypes = mime_types(x), ...) {
 #' @inheritParams make_widget
 #' @return An [R6::R6Class] generator producing [CommWidget] subclasses.
 #' @export
-make_comm_widget <- function(classname, ..., inherit = CommWidget) {
-  make_widget(classname, ..., inherit = inherit)
+make_comm_widget <- function(
+  classname,
+  ...,
+  comm_metadata = NULL,
+  inherit = CommWidget
+) {
+  md <- comm_metadata
+  wrapper <- R6::R6Class(
+    paste0(classname, "Base"),
+    inherit = inherit,
+    public = list(
+      initialize = function(ydoc = NULL) {
+        super$initialize(ydoc = ydoc, comm_metadata = md)
+      }
+    )
+  )
+  make_widget(classname, ..., inherit = wrapper)
 }

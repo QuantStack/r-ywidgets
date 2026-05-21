@@ -4,7 +4,7 @@
 \alias{make_comm_widget}
 \title{Generate a CommWidget subclass with named CRDT-backed attributes}
 \usage{
-make_comm_widget(classname, ..., inherit = CommWidget)
+make_comm_widget(classname, ..., comm_metadata = NULL, inherit = CommWidget)
 }
 \arguments{
 \item{classname}{Name of the generated R6 class.}

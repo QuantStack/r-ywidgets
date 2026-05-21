@@ -151,18 +151,11 @@ YAttrWidget <- R6::R6Class(
   "YAttrWidget",
   inherit = WidgetBase,
   public = list(
-    #' @description Read the model name registered in the ydoc `_model_name` text.
-    #' @return The class name string stored in the ydoc.
-    model_name = function() private$get_model_name(),
-
     #' @description Create a new `YAttrWidget`.
     #' @param ydoc An existing `yr::Doc` to adopt, or `NULL` to create a fresh one.
     initialize = function(ydoc = NULL) {
       super$initialize(ydoc)
       private$.attrs <- self$ydoc$get_or_insert_map("_attrs")
-      if (!nzchar(private$get_model_name())) {
-        private$set_model_name(class(self)[[1L]])
-      }
 
       private$.attrs$observe(
         function(trans, event) {
@@ -200,25 +193,7 @@ YAttrWidget <- R6::R6Class(
   ),
 
   private = list(
-    .attrs = NULL,
-
-    y_model_name = function() {
-      self$ydoc$get_or_insert_text("_model_name")
-    },
-
-    set_model_name = function(name) {
-      model_text <- private$y_model_name()
-      self$ydoc$with_transaction(
-        function(trans) model_text$push(trans, name),
-        mutable = TRUE,
-        origin = LOCAL_ORIGIN
-      )
-    },
-
-    get_model_name = function() {
-      model_text <- private$y_model_name()
-      self$ydoc$with_transaction(function(trans) model_text$get_string(trans))
-    }
+    .attrs = NULL
   )
 )
 
