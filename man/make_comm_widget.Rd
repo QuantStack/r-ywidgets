@@ -2,9 +2,14 @@
 % Please edit documentation in R/comm.R
 \name{make_comm_widget}
 \alias{make_comm_widget}
-\title{Generate a CommWidget subclass with named CRDT-backed attributes}
+\title{Generate a Comm-backed widget subclass with named CRDT-backed attributes}
 \usage{
-make_comm_widget(classname, ..., comm_metadata = NULL, inherit = CommWidget)
+make_comm_widget(
+  classname,
+  ...,
+  comm_metadata = NULL,
+  inherit = CommAttrWidget
+)
 }
 \arguments{
 \item{classname}{Name of the generated R6 class.}
@@ -19,9 +24,10 @@ fresh ydoc and is ignored when joining an existing one.}
 \item{inherit}{Parent R6 class — [YAttrWidget] or [YRootWidget].}
 }
 \value{
-An [R6::R6Class] generator producing [CommWidget] subclasses.
+An [R6::R6Class] generator producing Comm-backed widget subclasses.
 }
 \description{
-Like [make_widget()], but the generated class inherits from [CommWidget],
+Like [make_widget()], but the generated class inherits from a Comm-backed
+base (default [CommAttrWidget]; pass [CommRootWidget] for root storage),
 so each instance opens a Jupyter Comm and syncs its ydoc over it.
 }
