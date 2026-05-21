@@ -42,7 +42,7 @@ depends-on = ["install-ywidgets"]
 
 [feature.dev.tasks]
 # Document
-doc = "Rscript -e 'devtools::document()'"
+doc = "rm -rf man/ && Rscript -e 'devtools::document()'"
 # Formatters
 fmt-air = "air format R/ tests/"
 fmt-tombi = "tombi format"
