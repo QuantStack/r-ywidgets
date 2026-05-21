@@ -41,6 +41,23 @@ test_that("Widget callback does not fire when value is unchanged", {
   expect_equal(count, 0L)
 })
 
+test_that("Widget stores Prelim attribute values as CRDT types", {
+  W <- make_widget("W", body = yr::Prelim$text("hi"))
+  w <- W$new()
+  expect_true(inherits(w$body, "TextRef"))
+  expect_equal(
+    w$ydoc$with_transaction(function(t) w$body$get_string(t)),
+    "hi"
+  )
+
+  w$body <- yr::Prelim$text("bye")
+  expect_true(inherits(w$body, "TextRef"))
+  expect_equal(
+    w$ydoc$with_transaction(function(t) w$body$get_string(t)),
+    "bye"
+  )
+})
+
 test_that("Widget join creates widget with field values from source", {
   W <- make_widget("W", foo = "hello", bar = 42L)
   local <- W$new()

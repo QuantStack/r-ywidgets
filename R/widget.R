@@ -56,9 +56,11 @@ YdocStorage <- R6::R6Class(
           if (identical(private$attrs$get(trans, private$key), value)) {
             return(FALSE)
           }
-          # TODO should not insert anything unconditionally but allow for setting recursive
-          # struct such as Text, Array...
-          private$attrs$insert_any(trans, private$key, value)
+          # Anything that is not explicitly typed with a CRDT type is inserte as Any
+          if (!inherits(value, "Prelim")) {
+            value = yr::Prelim$any(value)
+          }
+          private$attrs$insert(trans, private$key, value)
           TRUE
         },
         mutable = TRUE,
