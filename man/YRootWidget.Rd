@@ -10,7 +10,7 @@ root carries its own observer that emits the attribute's
 [make_widget()] with `inherit = YRootWidget` to generate subclasses.
 }
 \section{Super class}{
-\code{\link[ywidgets:WidgetBase]{WidgetBase}} -> \code{YRootWidget}
+\code{WidgetBase} -> \code{YRootWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -21,8 +21,8 @@ root carries its own observer that emits the attribute's
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="initialize"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-initialize'><code>WidgetBase$initialize()</code></a></span></li>
+  <li><code>WidgetBase$connect()</code></li>
+  <li><code>WidgetBase$initialize()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

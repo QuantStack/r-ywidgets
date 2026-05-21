@@ -10,7 +10,7 @@ no external source, so `remote_changed` never fires; subclasses backed by
 shared state emit on it when they observe remote updates.
 }
 \section{Super class}{
-\code{\link[ywidgets:LocalStorage]{LocalStorage}} -> \code{RemoteLocalStorage}
+\code{LocalStorage} -> \code{RemoteLocalStorage}
 }
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
@@ -28,8 +28,8 @@ shared state emit on it when they observe remote updates.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="LocalStorage" data-id="read"><a href='../../ywidgets/html/LocalStorage.html#method-LocalStorage-read'><code>LocalStorage$read()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="LocalStorage" data-id="update"><a href='../../ywidgets/html/LocalStorage.html#method-LocalStorage-update'><code>LocalStorage$update()</code></a></span></li>
+  <li><code>LocalStorage$read()</code></li>
+  <li><code>LocalStorage$update()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

@@ -9,7 +9,7 @@ A single `_attrs` observer dispatches remote changes to each storage's
 `remote_changed` signal. Use [make_widget()] to generate subclasses.
 }
 \section{Super class}{
-\code{\link[ywidgets:WidgetBase]{WidgetBase}} -> \code{YAttrWidget}
+\code{WidgetBase} -> \code{YAttrWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -21,7 +21,7 @@ A single `_attrs` observer dispatches remote changes to each storage's
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
+  <li><code>WidgetBase$connect()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

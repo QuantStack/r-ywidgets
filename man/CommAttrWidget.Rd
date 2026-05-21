@@ -9,7 +9,7 @@ protocol on top of [YAttrWidget]'s map-attr storage. Constructor:
 `CommAttrWidget$new(ydoc = NULL, comm_metadata = NULL)`.
 }
 \section{Super classes}{
-\code{\link[ywidgets:WidgetBase]{WidgetBase}} -> \code{\link[ywidgets:YAttrWidget]{YAttrWidget}} -> \code{.CommAttrWidgetBase} -> \code{CommAttrWidget}
+\code{WidgetBase} -> \code{YAttrWidget} -> \code{.CommAttrWidgetBase} -> \code{CommAttrWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -19,8 +19,8 @@ protocol on top of [YAttrWidget]'s map-attr storage. Constructor:
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="YAttrWidget" data-id="register_storage"><a href='../../ywidgets/html/YAttrWidget.html#method-YAttrWidget-register_storage'><code>YAttrWidget$register_storage()</code></a></span></li>
+  <li><code>WidgetBase$connect()</code></li>
+  <li><code>YAttrWidget$register_storage()</code></li>
   <li><code>.CommAttrWidgetBase$comm_id()</code></li>
   <li><code>.CommAttrWidgetBase$initialize()</code></li>
   <li><code>.CommAttrWidgetBase$on_remote_message()</code></li>

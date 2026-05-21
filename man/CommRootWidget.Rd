@@ -8,7 +8,7 @@ Like [CommAttrWidget] but on top of [YRootWidget]'s per-root storage.
 Constructor: `CommRootWidget$new(ydoc = NULL, comm_metadata = NULL)`.
 }
 \section{Super classes}{
-\code{\link[ywidgets:WidgetBase]{WidgetBase}} -> \code{\link[ywidgets:YRootWidget]{YRootWidget}} -> \code{.CommRootWidgetBase} -> \code{CommRootWidget}
+\code{WidgetBase} -> \code{YRootWidget} -> \code{.CommRootWidgetBase} -> \code{CommRootWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -18,8 +18,8 @@ Constructor: `CommRootWidget$new(ydoc = NULL, comm_metadata = NULL)`.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="YRootWidget" data-id="register_storage"><a href='../../ywidgets/html/YRootWidget.html#method-YRootWidget-register_storage'><code>YRootWidget$register_storage()</code></a></span></li>
+  <li><code>WidgetBase$connect()</code></li>
+  <li><code>YRootWidget$register_storage()</code></li>
   <li><code>.CommRootWidgetBase$comm_id()</code></li>
   <li><code>.CommRootWidgetBase$initialize()</code></li>
   <li><code>.CommRootWidgetBase$on_remote_message()</code></li>
