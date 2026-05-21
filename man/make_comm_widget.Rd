@@ -9,9 +9,14 @@ make_comm_widget(classname, ..., inherit = CommWidget)
 \arguments{
 \item{classname}{Name of the generated R6 class.}
 
-\item{...}{Named default values, one per attribute.}
+\item{...}{Named default values, one per attribute. For
+`inherit = YAttrWidget`, any R value (Prelims are passed through, others
+are wrapped as `yr::Prelim$any`). For `inherit = YRootWidget`, a
+[yr::Prelim] whose kind selects the root type. Each default may be
+overridden per-instance via `$new(<name> = ...)`; the override seeds a
+fresh ydoc and is ignored when joining an existing one.}
 
-\item{inherit}{Parent R6 class.}
+\item{inherit}{Parent R6 class — [YAttrWidget] or [YRootWidget].}
 }
 \value{
 An [R6::R6Class] generator producing [CommWidget] subclasses.

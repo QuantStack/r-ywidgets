@@ -4,14 +4,19 @@
 \alias{make_widget}
 \title{Generate a Widget subclass with CRDT-backed attributes}
 \usage{
-make_widget(classname, ..., inherit = Widget)
+make_widget(classname, ..., inherit = YAttrWidget)
 }
 \arguments{
 \item{classname}{Name of the generated R6 class.}
 
-\item{...}{Named default values, one per attribute.}
+\item{...}{Named default values, one per attribute. For
+`inherit = YAttrWidget`, any R value (Prelims are passed through, others
+are wrapped as `yr::Prelim$any`). For `inherit = YRootWidget`, a
+[yr::Prelim] whose kind selects the root type. Each default may be
+overridden per-instance via `$new(<name> = ...)`; the override seeds a
+fresh ydoc and is ignored when joining an existing one.}
 
-\item{inherit}{Parent R6 class.}
+\item{inherit}{Parent R6 class — [YAttrWidget] or [YRootWidget].}
 }
 \value{
 An [R6::R6Class] generator. Generated classes add a static
@@ -19,9 +24,13 @@ An [R6::R6Class] generator. Generated classes add a static
   alongside the standard `$new(...)`.
 }
 \description{
-Each named attribute becomes an active binding whose reads and writes go
-through the widget's ydoc `_attrs` map. Subscribers registered via
-`connect()` fire on both local writes and remote-peer updates.
+Each named attribute becomes an active binding backed by the parent
+class's storage. With `inherit = YAttrWidget` (the default), reads and
+writes go through the ydoc's `_attrs` map and `connect()` callbacks fire
+on both local writes and remote-peer updates. With `inherit = YRootWidget`, each
+attribute is its own top-level Text/Map/Array root; defaults must be
+[yr::Prelim]s (only their kind is used — content is not written) and
+`connect()` fires on remote-peer updates only.
 }
 \examples{
 MyWidget <- make_widget("MyWidget", foo = "", bar = 0L)
@@ -30,5 +39,17 @@ w2 <- MyWidget$join(w)                  # joins from w's current ydoc state
 w$foo                                   # reads from ydoc
 w$foo <- "hi"                           # writes to ydoc
 w$connect(foo = function(v) cat("foo changed:", v, "\n"))
+
+\dontrun{
+MyDoc <- make_widget(
+  "MyDoc",
+  title = yr::Prelim$text(""),
+  items = yr::Prelim$array(list(), recursive = FALSE),
+  inherit = YRootWidget
+)
+d <- MyDoc$new()
+d$ydoc$with_transaction(function(t) d$title$push(t, "hi"), mutable = TRUE)
+d$connect(title = function(event) cat("title changed\n"))
+}
 
 }

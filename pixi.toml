@@ -10,7 +10,7 @@ dev = { features = ["test", "dev"], solve-group = "default" }
 # Runtime dependencies — present in every environment.
 [dependencies]
 r-base = ">=4.1"
-r-yr = ">=0.1.3"
+r-yr = ">=0.1.4"
 xeus-r = ">=0.11.0"  # hera
 r-r6 = "*"
 

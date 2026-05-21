@@ -4,14 +4,14 @@
 \alias{CommWidget}
 \title{Widget backed by a Jupyter Comm and a CRDT ydoc}
 \description{
-Extends [Widget] by opening a Jupyter Comm and running the Y.js sync
+Extends [YAttrWidget] by opening a Jupyter Comm and running the Y.js sync
 protocol over it, mirroring `ypywidgets.CommWidget`: on `SyncStep1` reply
 with a `SyncStep2` diff; on `SyncStep2` apply the peer's state and (once)
 start forwarding local changes as `Update`s; on `Update` apply the peer's
 incremental change.
 }
-\section{Super class}{
-\code{\link[ywidgets:Widget]{Widget}} -> \code{CommWidget}
+\section{Super classes}{
+\code{\link[ywidgets:WidgetBase]{WidgetBase}} -> \code{\link[ywidgets:YAttrWidget]{YAttrWidget}} -> \code{CommWidget}
 }
 \section{Methods}{
 \subsection{Public methods}{
@@ -24,8 +24,9 @@ incremental change.
 }
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="Widget" data-id="model_name"><a href='../../ywidgets/html/Widget.html#method-Widget-model_name'><code>Widget$model_name()</code></a></span></li>
-  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="Widget" data-id="register_storage"><a href='../../ywidgets/html/Widget.html#method-Widget-register_storage'><code>Widget$register_storage()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="WidgetBase" data-id="connect"><a href='../../ywidgets/html/WidgetBase.html#method-WidgetBase-connect'><code>WidgetBase$connect()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="YAttrWidget" data-id="model_name"><a href='../../ywidgets/html/YAttrWidget.html#method-YAttrWidget-model_name'><code>YAttrWidget$model_name()</code></a></span></li>
+  <li><span class="pkg-link" data-pkg="ywidgets" data-topic="YAttrWidget" data-id="register_storage"><a href='../../ywidgets/html/YAttrWidget.html#method-YAttrWidget-register_storage'><code>YAttrWidget$register_storage()</code></a></span></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

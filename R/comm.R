@@ -85,7 +85,7 @@ CommProvider <- R6::R6Class(
 
 #' Widget backed by a Jupyter Comm and a CRDT ydoc
 #'
-#' Extends [Widget] by opening a Jupyter Comm and running the Y.js sync
+#' Extends [YAttrWidget] by opening a Jupyter Comm and running the Y.js sync
 #' protocol over it, mirroring `ypywidgets.CommWidget`: on `SyncStep1` reply
 #' with a `SyncStep2` diff; on `SyncStep2` apply the peer's state and (once)
 #' start forwarding local changes as `Update`s; on `Update` apply the peer's
@@ -94,7 +94,7 @@ CommProvider <- R6::R6Class(
 #' @export
 CommWidget <- R6::R6Class(
   "CommWidget",
-  inherit = Widget,
+  inherit = YAttrWidget,
 
   public = list(
     #' @description Open a Comm on the `"ywidget"` target and send `SyncStep1`.
