@@ -31,10 +31,10 @@ test_that("Reactive set updates the value", {
   expect_equal(r$get(), 2)
 })
 
-test_that("Reactive emits signal when value changes", {
+test_that("Reactive emits local_changed when value changes", {
   r <- Reactive$new(1)
   fired <- NULL
-  r$signal$connect(function(v) fired <<- v)
+  r$local_changed$connect(function(v) fired <<- v)
   r$set(2)
   expect_equal(fired, 2)
 })
@@ -42,9 +42,20 @@ test_that("Reactive emits signal when value changes", {
 test_that("Reactive does not emit when value is identical", {
   r <- Reactive$new(1)
   count <- 0L
-  r$signal$connect(function(v) count <<- count + 1L)
+  r$local_changed$connect(function(v) count <<- count + 1L)
   r$set(1)
   expect_equal(count, 0L)
+})
+
+test_that("Reactive remote_changed is NULL when storage has none", {
+  r <- Reactive$new(1)
+  expect_null(r$remote_changed)
+})
+
+test_that("Reactive re-exposes storage remote_changed signal", {
+  s <- RemoteLocalStorage$new(1)
+  r <- Reactive$new(storage = s)
+  expect_identical(r$remote_changed, s$remote_changed)
 })
 
 test_that("Reactive delegates reads and updates to a custom storage backend", {

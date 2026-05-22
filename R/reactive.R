@@ -54,10 +54,36 @@ LocalStorage <- R6::R6Class(
   )
 )
 
+#' Storage backend with a remote-change [Signal].
+#'
+#' Extends [LocalStorage] with a public `remote_changed` signal fired when the
+#' value changes for reasons outside of `update()`. The in-memory backend has
+#' no external source, so `remote_changed` never fires; subclasses backed by
+#' shared state emit on it when they observe remote updates.
+#'
+#' @export
+RemoteLocalStorage <- R6::R6Class(
+  "RemoteLocalStorage",
+  inherit = LocalStorage,
+  public = list(
+    #' @field remote_changed [Signal] fired on remote changes to the value.
+    remote_changed = NULL,
+
+    #' @description Create the backend.
+    #' @param value Initial value.
+    initialize = function(value = NULL) {
+      super$initialize(value)
+      self$remote_changed <- Signal$new()
+    }
+  )
+)
+
 #' Reactive value
 #'
 #' Wraps a storage backend and a [Signal]. `set()` writes the value and emits
-#' on `$signal`, but only when it differs from the current value.
+#' on `$local_changed`, but only when it differs from the current value. If
+#' the storage exposes a `remote_changed` signal, it is re-exposed as
+#' `$remote_changed`; otherwise that field is `NULL`.
 #'
 #' @export
 Reactive <- R6::R6Class(
@@ -67,8 +93,12 @@ Reactive <- R6::R6Class(
   ),
 
   public = list(
-    #' @field signal [Signal] fired when the value changes.
-    signal = NULL,
+    #' @field local_changed [Signal] fired when the value is changed via `set()`.
+    local_changed = NULL,
+
+    #' @field remote_changed [Signal] from the storage backend, or `NULL` if
+    #'   the backend does not expose one.
+    remote_changed = NULL,
 
     #' @description Create a reactive value.
     #' @param value Initial value.
@@ -80,7 +110,10 @@ Reactive <- R6::R6Class(
       } else {
         storage
       }
-      self$signal <- Signal$new()
+      self$local_changed <- Signal$new()
+      if (!is.null(private$storage$remote_changed)) {
+        self$remote_changed <- private$storage$remote_changed
+      }
     },
 
     #' @description Return the current value without triggering any signal.
@@ -88,12 +121,12 @@ Reactive <- R6::R6Class(
       private$storage$read()
     },
 
-    #' @description Set a new value. Emits via `$signal` only if the storage
-    #'   reports that the value changed.
+    #' @description Set a new value. Emits via `$local_changed` only if the
+    #'   storage reports that the value changed.
     #' @param value The new value.
     set = function(value) {
       if (private$storage$update(value)) {
-        self$signal$emit(value)
+        self$local_changed$emit(value)
       }
     }
   )
@@ -135,7 +168,7 @@ make_reactive <- function(classname, ...) {
   connect_fn <- function(...) {
     args <- list(...)
     for (nm in names(args)) {
-      private[[paste0(".", nm)]]$signal$connect(args[[nm]])
+      private[[paste0(".", nm)]]$local_changed$connect(args[[nm]])
     }
     invisible(self)
   }
