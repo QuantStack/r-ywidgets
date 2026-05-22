@@ -10,7 +10,7 @@ dev = { features = ["test", "dev"], solve-group = "default" }
 # Runtime dependencies — present in every environment.
 [dependencies]
 r-base = ">=4.1"
-r-yr = ">=0.1.2"
+r-yr = ">=0.1.4"
 xeus-r = ">=0.11.0"  # hera
 r-r6 = "*"
 
@@ -42,7 +42,7 @@ depends-on = ["install-ywidgets"]
 
 [feature.dev.tasks]
 # Document
-doc = "Rscript -e 'devtools::document()'"
+doc = "rm -rf man/ && Rscript -e 'devtools::document()'"
 # Formatters
 fmt-air = "air format R/ tests/"
 fmt-tombi = "tombi format"
