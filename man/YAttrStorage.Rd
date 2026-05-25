@@ -9,6 +9,9 @@ and a public `remote_changed` [Signal]). Writes via `update()` use
 `LOCAL_ORIGIN`; the owning [YAttrWidget] runs the `_attrs` observer and emits on
 `remote_changed` when a peer changes this key.
 }
+\section{Super class}{
+\code{YActiveTransactionStorage} -> \code{YAttrStorage}
+}
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
@@ -34,7 +37,7 @@ and a public `remote_changed` [Signal]). Writes via `update()` use
   it (a non-Prelim is wrapped as `yr::Prelim$any`).
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{YAttrStorage$new(ydoc, attrs, key, default = NULL)}
+    \preformatted{YAttrStorage$new(ydoc, attrs, key, active_transaction, default = NULL)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -43,6 +46,9 @@ and a public `remote_changed` [Signal]). Writes via `update()` use
       \item{\code{ydoc}}{The `yr::Doc`.}
       \item{\code{attrs}}{Its attribute map.}
       \item{\code{key}}{Attribute key to read/write.}
+      \item{\code{active_transaction}}{A [TransactionState] shared with the owning
+widget; when its `transaction` is non-NULL, storage reads/writes join
+that transaction instead of opening a new one.}
       \item{\code{default}}{Default value (Prelim or any R value), or `NULL` to
 skip the initial write entirely.}
     }

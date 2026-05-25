@@ -15,6 +15,22 @@ REMOTE_ORIGIN <- NULL
   if (inherits(value, "Prelim")) value else yr::Prelim$any(value)
 }
 
+#' Holds the currently-active `yr::Transaction`, or NULL. Shared by a
+#' WidgetBase and its storages so storage operations can join an ongoing
+#' transaction instead of opening a nested one.
+#'
+#' We need this for syntaxix sugar because the getter/setter on widget work
+#' without function calls (as Python property) so there is no alternative place
+#' to pass a transaction argument.
+#'
+#' @noRd
+TransactionState <- R6::R6Class(
+  "TransactionState",
+  public = list(
+    transaction = NULL
+  )
+)
+
 #' Shared base for `YAttrWidget` and `YRootWidget`
 #'
 #' Owns the `yr::Doc` and the per-attribute storage registry, and provides
@@ -33,6 +49,7 @@ WidgetBase <- R6::R6Class(
     initialize = function(ydoc = NULL) {
       self$ydoc <- if (is.null(ydoc)) yr::Doc$new() else ydoc
       private$.storages <- list()
+      private$.active_transaction <- TransactionState$new()
     },
 
     #' @description Subscribe callbacks to attribute changes by name. Each
@@ -56,11 +73,73 @@ WidgetBase <- R6::R6Class(
     #' @param ... Subclass-specific arguments (e.g. `default` or `prelim`).
     register_storage = function(name, ...) {
       stop("register_storage() must be implemented by a subclass.")
+    },
+
+    #' @description Run `fn(trans)` inside a read-only transaction, exposing
+    #'   `trans` as the active transaction so storage reads join it.
+    #' @param fn Function called with the transaction.
+    with_read = function(fn) {
+      private$with_active_transaction(
+        fn,
+        mutable = FALSE,
+        origin = LOCAL_ORIGIN
+      )
+    },
+
+    #' @description Run `fn(trans)` inside a writable transaction tagged with
+    #'   `LOCAL_ORIGIN`, exposing `trans` as the active transaction so storage
+    #'   writes join it.
+    #' @param fn Function called with the transaction.
+    with_write = function(fn) {
+      private$with_active_transaction(fn, mutable = TRUE, origin = LOCAL_ORIGIN)
     }
   ),
 
   private = list(
-    .storages = NULL
+    .storages = NULL,
+    .active_transaction = NULL,
+
+    # Run `fn(trans)` inside a `with_transaction`, exposing `trans` as the
+    # active transaction to storages for the duration of the call.
+    with_active_transaction = function(fn, ...) {
+      state <- private$.active_transaction
+      self$ydoc$with_transaction(
+        function(trans) {
+          state$transaction <- trans
+          on.exit(state$transaction <- NULL)
+          fn(trans)
+        },
+        ...
+      )
+    }
+  )
+)
+
+#' Storage mixin that joins an ongoing transaction when one is active.
+#' Holds a TransactionState shared with the owning widget and exposes a
+#' private with_transaction() that runs fn(trans) on the active transaction
+#' when set, and otherwise opens a fresh one on ydoc.
+#' @noRd
+YActiveTransactionStorage <- R6::R6Class(
+  "YActiveTransactionStorage",
+  private = list(
+    ydoc = NULL,
+    active_transaction = NULL,
+
+    with_transaction = function(fn, mutable = FALSE, origin = NULL) {
+      active <- private$active_transaction$transaction
+      if (!is.null(active)) {
+        return(fn(active))
+      }
+      private$ydoc$with_transaction(fn, mutable = mutable, origin = origin)
+    }
+  ),
+
+  public = list(
+    initialize = function(ydoc, active_transaction) {
+      private$ydoc <- ydoc
+      private$active_transaction <- active_transaction
+    }
   )
 )
 
@@ -74,8 +153,8 @@ WidgetBase <- R6::R6Class(
 #' @export
 YAttrStorage <- R6::R6Class(
   "YAttrStorage",
+  inherit = YActiveTransactionStorage,
   private = list(
-    ydoc = NULL,
     attrs = "_attrs",
     key = NULL
   ),
@@ -89,10 +168,19 @@ YAttrStorage <- R6::R6Class(
     #' @param ydoc The `yr::Doc`.
     #' @param attrs Its attribute map.
     #' @param key Attribute key to read/write.
+    #' @param active_transaction A [TransactionState] shared with the owning
+    #'   widget; when its `transaction` is non-NULL, storage reads/writes join
+    #'   that transaction instead of opening a new one.
     #' @param default Default value (Prelim or any R value), or `NULL` to
     #'   skip the initial write entirely.
-    initialize = function(ydoc, attrs, key, default = NULL) {
-      private$ydoc <- ydoc
+    initialize = function(
+      ydoc,
+      attrs,
+      key,
+      active_transaction,
+      default = NULL
+    ) {
+      super$initialize(ydoc, active_transaction)
       private$attrs <- attrs
       private$key <- key
       self$remote_changed <- Signal$new()
@@ -101,7 +189,7 @@ YAttrStorage <- R6::R6Class(
       # It may already be present if joining another widget.
       if (!is.null(default)) {
         prelim_default <- .as_prelim(default)
-        private$ydoc$with_transaction(
+        private$with_transaction(
           function(trans) {
             if (is.null(private$attrs$get(trans, private$key))) {
               private$attrs$insert(trans, private$key, prelim_default)
@@ -115,7 +203,7 @@ YAttrStorage <- R6::R6Class(
 
     #' @description Return the value stored under `key`.
     read = function() {
-      private$ydoc$with_transaction(
+      private$with_transaction(
         function(trans) private$attrs$get(trans, private$key)
       )
     },
@@ -124,7 +212,7 @@ YAttrStorage <- R6::R6Class(
     #' @param value New value.
     #' @return `TRUE` iff the value was written.
     update = function(value) {
-      private$ydoc$with_transaction(
+      private$with_transaction(
         function(trans) {
           if (identical(private$attrs$get(trans, private$key), value)) {
             return(FALSE)
@@ -186,7 +274,13 @@ YAttrWidget <- R6::R6Class(
     #' @param default Default value (Prelim or any R value).
     #' @return The newly created [YAttrStorage].
     register_storage = function(name, default) {
-      storage <- YAttrStorage$new(self$ydoc, private$.attrs, name, default)
+      storage <- YAttrStorage$new(
+        self$ydoc,
+        private$.attrs,
+        name,
+        private$.active_transaction,
+        default
+      )
       private$.storages[[name]] <- storage
       storage
     }
@@ -208,6 +302,7 @@ YAttrWidget <- R6::R6Class(
 #' @export
 YRootStorage <- R6::R6Class(
   "YRootStorage",
+  inherit = YActiveTransactionStorage,
   private = list(
     ref = NULL,
 
@@ -233,10 +328,14 @@ YRootStorage <- R6::R6Class(
     #' @param name Root name on the doc.
     #' @param prelim A `yr::Prelim` whose `is_text/is_map/is_array` selects
     #'   the root kind. Content is ignored.
-    initialize = function(ydoc, name, prelim) {
+    #' @param active_transaction A [TransactionState] shared with the owning
+    #'   widget. Stored for symmetry with [YAttrStorage]; root reads/writes
+    #'   currently go through the ref directly and do not consult it.
+    initialize = function(ydoc, name, prelim, active_transaction) {
       if (!inherits(prelim, "Prelim")) {
         stop("YRootStorage requires a yr::Prelim for '", name, "'.")
       }
+      super$initialize(ydoc, active_transaction)
       private$ref <- private$insert_root(ydoc, name, prelim)
       self$remote_changed <- Signal$new()
       sig <- self$remote_changed
@@ -287,7 +386,12 @@ YRootWidget <- R6::R6Class(
     #' @param prelim A `yr::Prelim` whose kind selects the root type.
     #' @return The newly created [YRootStorage].
     register_storage = function(name, prelim) {
-      storage <- YRootStorage$new(self$ydoc, name, prelim)
+      storage <- YRootStorage$new(
+        self$ydoc,
+        name,
+        prelim,
+        private$.active_transaction
+      )
       private$.storages[[name]] <- storage
       storage
     }

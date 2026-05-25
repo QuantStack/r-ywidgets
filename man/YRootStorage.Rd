@@ -10,6 +10,9 @@ type is consulted; the Prelim's content is not written). `read()` returns
 the ref; `update()` is unsupported — callers mutate the ref directly.
 Remote (non-`LOCAL_ORIGIN`) changes fire `remote_changed`.
 }
+\section{Super class}{
+\code{YActiveTransactionStorage} -> \code{YRootStorage}
+}
 \section{Public fields}{
   \if{html}{\out{<div class="r6-fields">}}
   \describe{
@@ -33,7 +36,7 @@ Remote (non-`LOCAL_ORIGIN`) changes fire `remote_changed`.
   Materialize the root ref for `name` from `prelim`'s type.
   \subsection{Usage}{
     \if{html}{\out{<div class="r">}}
-    \preformatted{YRootStorage$new(ydoc, name, prelim)}
+    \preformatted{YRootStorage$new(ydoc, name, prelim, active_transaction)}
     \if{html}{\out{</div>}}
   }
   \subsection{Arguments}{
@@ -43,6 +46,9 @@ Remote (non-`LOCAL_ORIGIN`) changes fire `remote_changed`.
       \item{\code{name}}{Root name on the doc.}
       \item{\code{prelim}}{A `yr::Prelim` whose `is_text/is_map/is_array` selects
 the root kind. Content is ignored.}
+      \item{\code{active_transaction}}{A [TransactionState] shared with the owning
+widget. Stored for symmetry with [YAttrStorage]; root reads/writes
+currently go through the ref directly and do not consult it.}
     }
     \if{html}{\out{</div>}}
   }

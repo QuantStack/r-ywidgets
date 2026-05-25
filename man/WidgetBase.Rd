@@ -21,6 +21,8 @@ override `register_storage()` to materialize their flavor of storage.
     \item \href{#method-WidgetBase-initialize}{\code{WidgetBase$new()}}
     \item \href{#method-WidgetBase-connect}{\code{WidgetBase$connect()}}
     \item \href{#method-WidgetBase-register_storage}{\code{WidgetBase$register_storage()}}
+    \item \href{#method-WidgetBase-with_read}{\code{WidgetBase$with_read()}}
+    \item \href{#method-WidgetBase-with_write}{\code{WidgetBase$with_write()}}
     \item \href{#method-WidgetBase-clone}{\code{WidgetBase$clone()}}
   }
 }
@@ -83,6 +85,47 @@ override `register_storage()` to materialize their flavor of storage.
     \describe{
       \item{\code{name}}{Attribute name.}
       \item{\code{...}}{Subclass-specific arguments (e.g. `default` or `prelim`).}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WidgetBase-with_read"></a>}}
+\if{latex}{\out{\hypertarget{method-WidgetBase-with_read}{}}}
+\subsection{\code{WidgetBase$with_read()}}{
+  Run `fn(trans)` inside a read-only transaction, exposing
+  `trans` as the active transaction so storage reads join it.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WidgetBase$with_read(fn)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{fn}}{Function called with the transaction.}
+    }
+    \if{html}{\out{</div>}}
+  }
+}
+
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-WidgetBase-with_write"></a>}}
+\if{latex}{\out{\hypertarget{method-WidgetBase-with_write}{}}}
+\subsection{\code{WidgetBase$with_write()}}{
+  Run `fn(trans)` inside a writable transaction tagged with
+  `LOCAL_ORIGIN`, exposing `trans` as the active transaction so storage
+  writes join it.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{WidgetBase$with_write(fn)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{fn}}{Function called with the transaction.}
     }
     \if{html}{\out{</div>}}
   }
