@@ -114,6 +114,10 @@ mutate_in_place <- function(w, name, value) {
   )
 }
 
+# TODO issue that to mutate we need to with_transaction (not idomatic and
+# needs privzate ydoc) plus in mutable transaction case, we also need an
+# inner transaction for Storage read (though not in the case of Rootdoc)
+# so potential deadlock.
 flavors <- list(
   list(
     name = "YAttrWidget (assign)",
