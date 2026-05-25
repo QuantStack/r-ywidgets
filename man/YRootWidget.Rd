@@ -23,6 +23,8 @@ root carries its own observer that emits the attribute's
 <ul>
   <li><code>WidgetBase$connect()</code></li>
   <li><code>WidgetBase$initialize()</code></li>
+  <li><code>WidgetBase$with_read()</code></li>
+  <li><code>WidgetBase$with_write()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

@@ -17,9 +17,11 @@ protocol on top of [YAttrWidget]'s map-attr storage. Constructor:
     \item \href{#method-CommAttrWidget-clone}{\code{CommAttrWidget$clone()}}
   }
 }
-\if{html}{\out{<details open><summary>Inherited methods</summary>
+\if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
   <li><code>WidgetBase$connect()</code></li>
+  <li><code>WidgetBase$with_read()</code></li>
+  <li><code>WidgetBase$with_write()</code></li>
   <li><code>YAttrWidget$register_storage()</code></li>
   <li><code>.CommAttrWidgetBase$comm_id()</code></li>
   <li><code>.CommAttrWidgetBase$initialize()</code></li>

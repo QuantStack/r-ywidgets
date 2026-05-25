@@ -73,6 +73,25 @@ WidgetBase <- R6::R6Class(
     #' @param ... Subclass-specific arguments (e.g. `default` or `prelim`).
     register_storage = function(name, ...) {
       stop("register_storage() must be implemented by a subclass.")
+    },
+
+    #' @description Run `fn(trans)` inside a read-only transaction, exposing
+    #'   `trans` as the active transaction so storage reads join it.
+    #' @param fn Function called with the transaction.
+    with_read = function(fn) {
+      private$with_active_transaction(
+        fn,
+        mutable = FALSE,
+        origin = LOCAL_ORIGIN
+      )
+    },
+
+    #' @description Run `fn(trans)` inside a writable transaction tagged with
+    #'   `LOCAL_ORIGIN`, exposing `trans` as the active transaction so storage
+    #'   writes join it.
+    #' @param fn Function called with the transaction.
+    with_write = function(fn) {
+      private$with_active_transaction(fn, mutable = TRUE, origin = LOCAL_ORIGIN)
     }
   ),
 

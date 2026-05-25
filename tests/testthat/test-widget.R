@@ -46,14 +46,14 @@ test_that("Widget stores Prelim attribute values as CRDT types", {
   w <- W$new()
   expect_true(inherits(w$body, "TextRef"))
   expect_equal(
-    w$ydoc$with_transaction(function(t) w$body$get_string(t)),
+    w$with_read(function(t) w$body$get_string(t)),
     "hi"
   )
 
   w$body <- yr::Prelim$text("bye")
   expect_true(inherits(w$body, "TextRef"))
   expect_equal(
-    w$ydoc$with_transaction(function(t) w$body$get_string(t)),
+    w$with_read(function(t) w$body$get_string(t)),
     "bye"
   )
 })
@@ -88,36 +88,20 @@ make_wire <- function() {
   )
 }
 
-# Read the current string content from a Prelim-text-backed attribute. Works
-# uniformly across flavors because both YAttrWidget (with Prelim$text default)
-# and YRootWidget expose the attribute as a TextRef.
-read_text <- function(w, name) {
-  ref <- w[[name]]
-  w$ydoc$with_transaction(function(t) ref$get_string(t))
-}
-
 # Per-flavor write: YAttrWidget supports both assign-style (replacing the
 # attrs-map slot with a fresh Prelim text) and in-place ref mutation;
 # YRootWidget's active binding is read-only, so callers must mutate the ref.
 mutate_in_place <- function(w, name, value) {
-  ref <- w[[name]]
-  w$ydoc$with_transaction(
-    function(t) {
-      len <- ref$len(t)
-      if (len > 0L) {
-        ref$remove_range(t, 0L, len)
-      }
-      ref$push(t, value)
-    },
-    mutable = TRUE,
-    origin = LOCAL_ORIGIN
-  )
+  w$with_write(function(t) {
+    ref <- w[[name]]
+    len <- ref$len(t)
+    if (len > 0L) {
+      ref$remove_range(t, 0L, len)
+    }
+    ref$push(t, value)
+  })
 }
 
-# TODO issue that to mutate we need to with_transaction (not idomatic and
-# needs privzate ydoc) plus in mutable transaction case, we also need an
-# inner transaction for Storage read (though not in the case of Rootdoc)
-# so potential deadlock.
 flavors <- list(
   list(
     name = "YAttrWidget (assign)",
@@ -183,18 +167,24 @@ for (f in flavors) {
       r_to_l$subscribe(apply_into(local))
 
       f$write(local, "foo", "synced")
-      expect_equal(read_text(remote, "foo"), "") # not delivered yet
+      expect_equal(remote$with_read(function(t) remote$foo$get_string(t)), "") # not delivered yet
       expect_equal(l_to_r$pending(), 1L)
 
       l_to_r$flush()
-      expect_equal(read_text(remote, "foo"), "synced")
+      expect_equal(
+        remote$with_read(function(t) remote$foo$get_string(t)),
+        "synced"
+      )
       expect_equal(l_to_r$pending(), 0L)
       expect_equal(r_to_l$pending(), 0L) # REMOTE_ORIGIN apply does not echo back
 
       f$write(remote, "bar", "also-synced")
-      expect_equal(read_text(local, "bar"), "")
+      expect_equal(local$with_read(function(t) local$bar$get_string(t)), "")
       r_to_l$flush()
-      expect_equal(read_text(local, "bar"), "also-synced")
+      expect_equal(
+        local$with_read(function(t) local$bar$get_string(t)),
+        "also-synced"
+      )
     }
   )
 }

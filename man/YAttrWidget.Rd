@@ -22,6 +22,8 @@ A single `_attrs` observer dispatches remote changes to each storage's
 \if{html}{\out{<details open><summary>Inherited methods</summary>
 <ul>
   <li><code>WidgetBase$connect()</code></li>
+  <li><code>WidgetBase$with_read()</code></li>
+  <li><code>WidgetBase$with_write()</code></li>
 </ul>
 </details>}}
 \if{html}{\out{<hr>}}

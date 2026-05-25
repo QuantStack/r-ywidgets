@@ -16,9 +16,11 @@ Constructor: `CommRootWidget$new(ydoc = NULL, comm_metadata = NULL)`.
     \item \href{#method-CommRootWidget-clone}{\code{CommRootWidget$clone()}}
   }
 }
-\if{html}{\out{<details open><summary>Inherited methods</summary>
+\if{html}{\out{<details><summary>Inherited methods</summary>
 <ul>
   <li><code>WidgetBase$connect()</code></li>
+  <li><code>WidgetBase$with_read()</code></li>
+  <li><code>WidgetBase$with_write()</code></li>
   <li><code>YRootWidget$register_storage()</code></li>
   <li><code>.CommRootWidgetBase$comm_id()</code></li>
   <li><code>.CommRootWidgetBase$initialize()</code></li>
