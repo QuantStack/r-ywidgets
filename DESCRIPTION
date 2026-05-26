@@ -1,6 +1,6 @@
 Package: ywidgets
 Title: Reactive Widgets Backed by Yr CRDTs
-Version: 0.0.0.9000
+Version: 0.1.3
 Authors@R: person("Antoine", "Prouvost", role = c("aut", "cre"),
     email = "AntoinePrv@users.noreply.github.com")
 Description: R port of ypywidgets — reactive widget models whose state is
