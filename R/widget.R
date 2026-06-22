@@ -15,6 +15,17 @@ REMOTE_ORIGIN <- NULL
   if (inherits(value, "Prelim")) value else yr::Prelim$any(value)
 }
 
+# Compare a CRDT-stored value against a candidate R value for change detection.
+# The CRDT normalizes types on round-trip (notably integers come back as doubles),
+# so identical() alone reports spurious changes;
+# fall back to a tolerant value-wise comparison when types differ.
+.values_equal <- function(stored, value) {
+  if (identical(stored, value)) {
+    return(TRUE)
+  }
+  length(stored) == length(value) && isTRUE(all.equal(stored, value))
+}
+
 #' Holds the currently-active `yr::Transaction`, or NULL. Shared by a
 #' WidgetBase and its storages so storage operations can join an ongoing
 #' transaction instead of opening a nested one.
@@ -214,7 +225,9 @@ YAttrStorage <- R6::R6Class(
     update = function(value) {
       private$with_transaction(
         function(trans) {
-          if (identical(private$attrs$get(trans, private$key), value)) {
+          # The CRDT may normalizes types on round-trip (e.g. an integer -> double)
+          # so a strict identical() would treat an unchanged value as changed.
+          if (.values_equal(private$attrs$get(trans, private$key), value)) {
             return(FALSE)
           }
           private$attrs$insert(trans, private$key, .as_prelim(value))
