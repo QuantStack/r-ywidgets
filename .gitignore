@@ -50,3 +50,16 @@ rsconnect/
 
 # Pixi
 .pixi/
+
+# Integration tests
+ui-tests/test-results/
+ui-tests/playwright-report/
+
+# Web files
+node_modules/
+*.log
+.eslintcache
+.stylelintcache
+
+# Jupyter assets
+.ipynb_checkpoints
