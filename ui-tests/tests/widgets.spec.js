@@ -45,6 +45,11 @@ async function runCellOk(page, cellIndex) {
   return cell;
 }
 
+/** Locator for a cell's rendered output area. */
+function cellOutput(cell) {
+  return cell.locator(".jp-OutputArea-output");
+}
+
 test.describe("examples/widgets.ipynb", () => {
   test.beforeEach(async ({ request, tmpPath }) => {
     const contents = galata.newContentsHelper(request);
@@ -72,6 +77,47 @@ test.describe("examples/widgets.ipynb", () => {
 
     // Instantiate and display it; the yjs-widgets frontend should render output.
     const displayCell = await runCellOk(page, cellIndexBySource(nb, "s <- IntSlider$new()"));
-    await expect(displayCell.locator(".jp-OutputArea-output")).toBeVisible();
+    await expect(cellOutput(displayCell)).toBeVisible();
+  });
+
+  test("renders the IntSlider and syncs UI changes back to R", async ({ page, tmpPath }) => {
+    await page.notebook.openByPath(`${tmpPath}/${fileName}`);
+    await page.notebook.activate(fileName);
+
+    const nb = loadClearedNotebook();
+
+    await runCellOk(page, cellIndexBySource(nb, "IntSlider <- ywidgets::make_comm_widget"));
+    const displayCell = await runCellOk(page, cellIndexBySource(nb, "s <- IntSlider$new()"));
+
+    // The yjs-widgets IntSlider renders a native HTML range input.
+    const slider = displayCell.locator('input[type="range"]');
+    await expect(slider).toBeVisible();
+    await expect(slider).toHaveAttribute("min", "0");
+    await expect(slider).toHaveAttribute("max", "100");
+    await expect(slider).toHaveAttribute("step", "1");
+    await expect(slider).toHaveValue("50"); // default value = 50L
+
+    // Move the slider via the UI; this should sync to R over the comm channel.
+    await slider.fill("75");
+    await expect(slider).toHaveValue("75");
+
+    // Re-evaluate `s$value` until R observes the new value (sync is async).
+    const valueCellIndex = cellIndexBySource(nb, "s$value");
+    await expect(async () => {
+      expect(await page.notebook.runCell(valueCellIndex)).toBe(true);
+      const valueCell = await page.notebook.getCellLocator(valueCellIndex);
+      await expect(cellOutput(valueCell)).toContainText("75");
+    }).toPass();
+
+    // Reverse direction: set the value from R; the slider UI should follow.
+    await runCellOk(page, cellIndexBySource(nb, "s$value = 0"));
+    await expect(slider).toHaveValue("0");
+
+    // And re-evaluating `s$value` reflects the same value.
+    await expect(async () => {
+      expect(await page.notebook.runCell(valueCellIndex)).toBe(true);
+      const valueCell = await page.notebook.getCellLocator(valueCellIndex);
+      await expect(cellOutput(valueCell)).toContainText("0");
+    }).toPass();
   });
 });
