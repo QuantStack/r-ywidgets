@@ -63,3 +63,6 @@ node_modules/
 
 # Jupyter assets
 .ipynb_checkpoints
+
+# nbconvert tests
+examples/*.nbconvert.ipynb

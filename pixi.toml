@@ -41,6 +41,16 @@ cmd = "R CMD INSTALL ."
 cmd = "jupyter"
 env = { R_PROFILE_USER = "$PIXI_PROJECT_ROOT/dev/.Rprofile" }
 
+[feature.dev.tasks.test-example]
+cmd = """
+jupyter nbconvert \
+  --to notebook \
+  --execute \
+  --ExecutePreprocessor.store_widget_state=False \
+  examples/widgets.ipynb
+"""
+env = { R_PROFILE_USER = "$PIXI_PROJECT_ROOT/dev/.Rprofile" }
+
 [feature.dev.tasks]
 # Document
 doc = "rm -rf man/ && Rscript -e 'devtools::document()'"
